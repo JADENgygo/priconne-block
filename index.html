@@ -1,0 +1,379 @@
+<html>
+	<head>
+		<meta charSet="utf-8" />
+		<meta name="description" content="プリコネRのブロックパズル" />
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:site" content="@JADENgygo" />
+		<meta property="og:url" content="https://priconne-block.vercel.app" />
+		<meta property="og:title" content="プリコネブロック" />
+		<meta property="og:description" content="プリコネRのブロックパズル" />
+		<meta property="og:image" content="https://priconne-block.vercel.app/img/peko.png" />
+		<meta name="viewport" content="width=500" />
+		<title>プリコネブロック</title>
+		<link rel="icon" href="img/peko.png" />
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+		<style>
+			.content {
+			  position: relative;
+			  min-height: 100vh;
+			  padding: 0 0 150px 0;
+			}
+			footer {
+			  position: absolute;
+			  bottom: 0;
+			  width: 100%;
+			}
+		</style>
+	</head>
+	<body class="text-center">
+		<div class="content">
+      <p class="fs-1 pt-3">プリコネブロック</p>
+      <p>モバイル端末は縦画面でプレイしてね</p>
+      <div id="game"></div>
+			<footer class="bg-secondary bg-opacity-25 text-center pt-3 pb-3">
+				<div class="mb-1">
+					<a href="https://twitter.com/@JADENgygo" class="link-dark me-1"><img src="img/twitter.svg" /></a>
+					<a href="https://priconne-portfolio.vercel.app" class="link-dark">プリコネツール</a>
+				</div>
+				<div>画像: &copy; Cygames, Inc.</div>
+			</footer>
+		</div>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+		<script>
+			const config = {
+				parent: "game",
+				type: Phaser.AUTO,
+				width: 300,
+				height: 600,
+				physics: {
+					default: 'arcade',
+					arcade: {
+						gravity: { y: 200 }
+					}
+				},
+				scene: {
+					preload: preload,
+					create: create,
+					update: update,
+				},
+        fps: 30,
+			};
+
+			const game = new Phaser.Game(config);
+
+			function preload() {
+        this.load.image("block0", "img/background.webp");
+        this.load.image("block1", "img/akari.webp");
+        this.load.image("block2", "img/akino.webp");
+        this.load.image("block3", "img/anna.webp");
+        this.load.image("block4", "img/aoi.webp");
+        this.load.image("block5", "img/arisa.webp");
+        this.load.image("block6", "img/ayane.webp");
+        this.load.image("block7", "img/ayumi.webp");
+        this.load.image("block8", "img/chieru.webp");
+        this.load.image("block9", "img/chika.webp");
+        this.load.image("block10", "img/eriko.webp");
+        this.load.image("block11", "img/hatsune.webp");
+        this.load.image("block12", "img/hiyori.webp");
+        this.load.image("block13", "img/homare.webp");
+        this.load.image("block14", "img/inori.webp");
+        this.load.image("block15", "img/io.webp");
+        this.load.image("block16", "img/iriya.webp");
+        this.load.image("block17", "img/jita.webp");
+        this.load.image("block18", "img/jun.webp");
+        this.load.image("block19", "img/kaori.webp");
+        this.load.image("block20", "img/karin.webp");
+        this.load.image("block21", "img/kasumi.webp");
+        this.load.image("block22", "img/kaya.webp");
+        this.load.image("block23", "img/kokkoro.webp");
+        this.load.image("block24", "img/kurisu.webp");
+        this.load.image("block25", "img/kuroe.webp");
+        this.load.image("block26", "img/kurumi.webp");
+        this.load.image("block27", "img/kuuka.webp");
+        this.load.image("block28", "img/kyaru.webp");
+        this.load.image("block29", "img/kyouka.webp");
+        this.load.image("block30", "img/mahiru.webp");
+        this.load.image("block31", "img/maho.webp");
+        this.load.image("block32", "img/makoto.webp");
+        this.load.image("block33", "img/matsuri.webp");
+        this.load.image("block34", "img/mihuyu.webp");
+        this.load.image("block35", "img/mimi.webp");
+        this.load.image("block36", "img/misaki.webp");
+        this.load.image("block37", "img/misato.webp");
+        this.load.image("block38", "img/misogi.webp");
+        this.load.image("block39", "img/mitsuki.webp");
+        this.load.image("block40", "img/miyako.webp");
+        this.load.image("block41", "img/monika.webp");
+        this.load.image("block42", "img/muimi.webp");
+        this.load.image("block43", "img/nanaka.webp");
+        this.load.image("block44", "img/neneka.webp");
+        this.load.image("block45", "img/ninon.webp");
+        this.load.image("block46", "img/nozomi.webp");
+        this.load.image("block47", "img/peko.webp");
+        this.load.image("block48", "img/rei.webp");
+        this.load.image("block49", "img/rima.webp");
+        this.load.image("block50", "img/rin.webp");
+        this.load.image("block51", "img/rino.webp");
+        this.load.image("block52", "img/ruka.webp");
+        this.load.image("block53", "img/saren.webp");
+        this.load.image("block54", "img/sheffy.webp");
+        this.load.image("block55", "img/shinobu.webp");
+        this.load.image("block56", "img/shiori.webp");
+        this.load.image("block57", "img/shizuru.webp");
+        this.load.image("block58", "img/suzume.webp");
+        this.load.image("block59", "img/suzuna.webp");
+        this.load.image("block60", "img/tamaki.webp");
+        this.load.image("block61", "img/tomo.webp");
+        this.load.image("block62", "img/tsumugi.webp");
+        this.load.image("block63", "img/yori.webp");
+        this.load.image("block64", "img/yui.webp");
+        this.load.image("block65", "img/yukari.webp");
+        this.load.image("block66", "img/yuki.webp");
+        this.load.image("block67", "img/yuni.webp");
+			}
+
+      let cursor;
+      let boards; // 20 x 10
+      let blackout;
+      let dialog;
+      let restart;
+      let over = false;
+      let blocks = [];
+
+      const positions = [
+        [[-1, 0], [0, -1], [1, 0]], // 凸
+        [[0, -1], [-1, 0], [-1, 1]], // key1
+        [[0, -1], [1, 0], [1, 1]], // key2
+        [[0, -1], [1, -1], [1, 0]], // squre
+        [[0, -1], [0, 1], [1, 1]], // L1
+        [[0, -1], [0, 1], [-1, 1]], // L2
+        [[0, -1], [0, 1], [0, 2]], // bar
+      ];
+
+      const ti = Math.floor(Math.random() * 1000) % positions.length;
+      const ii = (Math.floor(Math.random() * 1000) % 67) + 1;
+      let current = {
+        x: 5,
+        y: -3,
+        positions: _.cloneDeep(positions[ti]),
+        image: ii,
+      };
+
+			function create() {
+        cursor = this.input.keyboard.addKeys({ 
+            up: Phaser.Input.Keyboard.KeyCodes.UP,
+            down: Phaser.Input.Keyboard.KeyCodes.DOWN,
+            right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
+            left: Phaser.Input.Keyboard.KeyCodes.LEFT
+        });
+
+        boards = [];
+        for (let y = -10; y < 22; ++y) {
+          boards[y] = [];
+          for (let x = -2; x < 12; ++x) {
+            if (x < 0 || 9 < x || 19 < y) {
+              boards[y][x] = -1;
+            }
+            else {
+              boards[y][x] = 0;
+            }
+            const background = this.add.image(15 + 30 * x, 15 + 30 * y, 'block0');
+            background.setScale(0.25);
+          }
+        }
+
+				blackout = this.add.graphics().fillStyle(0x000, 0.5).fillRect(0, 0, 300, 600).setDepth(1);
+        blackout.visible = false;
+				dialog = this.add.graphics().fillStyle(0xffffff, 1).fillRoundedRect(75, 285, 150, 50, 15).setDepth(1);
+        dialog.visible = false;
+        restart = this.add.text(100, 303, "もう一度プレイ", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
+				restart.on("pointerdown", pointer => {
+          blackout.visible = false;
+          dialog.visible = false;
+          restart.visible = false;
+          blocks.forEach(e => e.destroy());
+          blocks = [];
+          for (let y = -10; y < 22; ++y) {
+            boards[y] = [];
+            for (let x = -2; x < 12; ++x) {
+              if (x < 0 || 9 < x || 19 < y) {
+                boards[y][x] = -1;
+              }
+              else {
+                boards[y][x] = 0;
+              }
+            }
+          }
+          const ti = Math.floor(Math.random() * 1000) % positions.length;
+          const ii = (Math.floor(Math.random() * 1000) % 67) + 1;
+          current = {
+            x: 5,
+            y: -3,
+            positions: _.cloneDeep(positions[ti]),
+            image: ii,
+          };
+          over = false;
+        });
+        restart.visible = false;
+			}
+
+      const canPutBlock = (block) => {
+        if (boards[block.y][block.x] !== 0) {
+          return false;
+        }
+        for (const e of block.positions) {
+          if (boards[block.y + e[1]][block.x + e[0]] !== 0) {
+            return false;
+          }
+        }
+        return true;
+      };
+
+      let timer = 0;
+      const dropBlock = (block, down) => {
+        if (down) {
+          timer = 0;
+        }
+        const buf = _.cloneDeep(block);
+        if (timer % 20 === 0) {
+          buf.y++;
+        }
+        timer++;
+        if (canPutBlock(buf)) {
+          return [buf, true];
+        }
+        return [block, false];
+      };
+
+      const putBlock = (block) => {
+        boards[block.y][block.x] = block.image;
+        for (const e of block.positions) {
+          boards[block.y + e[1]][block.x + e[0]] = block.image;
+        }
+      };
+
+      const deleteBlock = block => {
+        boards[block.y][block.x] = 0;
+        for (const e of block.positions) {
+          boards[block.y + e[1]][block.x + e[0]] = 0;
+        }
+      };
+
+      const createBlock = () => {
+        const pi = Math.floor(Math.random() * 1000) % positions.length;
+        const ii = (Math.floor(Math.random() * 1000) % 67) + 1;
+        const block = {x: 5, y: -3, positions: _.cloneDeep(positions[pi]), image: ii};
+        if (canPutBlock(block)) {
+          return block;
+        }
+        return null;
+      };
+
+      function showBoard() {
+        for (const e of blocks) {
+          e.destroy();
+        }
+        blocks = [];
+        for (let y = 0; y < 20; ++y) {
+          for (let x = 0; x < 10; ++x) {
+            if (boards[y][x] !== 0) {
+              const block = this.add.image(0, 0, 'block' + boards[y][x]);
+              block.setScale(0.25);
+              blocks.push(block);
+              blocks[blocks.length - 1].x = 15 + 30 * x;
+              blocks[blocks.length - 1].y = 15 + 30 * y;
+            }
+          }
+        }
+      }
+
+      const processInput = (block) => {
+        const buf = _.cloneDeep(block);
+        let down = false;
+        if (Phaser.Input.Keyboard.JustDown(cursor.up)) {
+          for (let k = 0; k < buf.positions.length; ++k) {
+            const x = buf.positions[k][0];
+            buf.positions[k][0] = -buf.positions[k][1];
+            buf.positions[k][1] = x;
+          }
+        }
+        else if (Phaser.Input.Keyboard.JustDown(cursor.left)) {
+          buf.x--;
+        }
+        else if (Phaser.Input.Keyboard.JustDown(cursor.right)) {
+          buf.x++;
+        }
+        else if (cursor.down.isDown) {
+          down = true;
+        }
+        if (canPutBlock(buf)) {
+          return [buf, down];
+        }
+        return [block, down];
+      };
+
+      const deleteLine = () => {
+        for (let y = 19; 0 <= y; --y) {
+          let found = true;
+          for (let x = 0; x < 10; ++x) {
+            if (boards[y][x] === 0) {
+              found = false;
+              break;
+            }
+          }
+          if (found) {
+            for (let y_ = y; 0 <= y_; --y_) {
+              for (let x_ = 0; x_ < 10; ++x_) {
+                boards[y_][x_] = boards[y_ - 1][x_];
+              }
+            }
+            ++y;
+          }
+        }
+      };
+
+      function gameOver() {
+        over = true;
+        blackout.visible = true;
+        dialog.visible = true;
+        restart.visible = true;
+      };
+
+			function update() {
+        if (over) {
+          return;
+        }
+        deleteBlock(current);
+        const [p, down] = processInput(current);
+
+        const [d, f] = dropBlock(p, down);
+
+        if (!f) {
+          putBlock(d);
+          deleteLine();
+          const block = createBlock();
+          if (block === null) {
+            gameOver.call(this);
+            return;
+          }
+          current = _.cloneDeep(block);
+          putBlock(current);
+          deleteLine();
+          showBoard.call(this);
+          return;
+        }
+
+        if (canPutBlock(d)) {
+          current = _.cloneDeep(d);
+          putBlock(current);
+        }
+        else {
+          putblock(current);
+        }
+        showBoard.call(this);
+			}
+		</script>
+	</body>
+</html>
