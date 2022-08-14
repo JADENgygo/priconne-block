@@ -311,29 +311,18 @@
             buf.positions[k][1] = x;
           }
         }
-        else if (Phaser.Input.Keyboard.JustDown(cursor.left) || (pan.isPanned && Math.abs(pan.startY - pan.y) < Math.abs(pan.startX - pan.x) && 0 < pan.startX - pan.x)) {
-          if (steps[0] === 0) {
-            steps[0]++;
-            buf.x--;
-          }
-          else if (steps[0] < (pan.startX - pan.x) / 30) {
-            steps[0]++;
-            buf.x--;
-          }
-          steps[1] = 0;
+        else if (Phaser.Input.Keyboard.JustDown(cursor.left)) {
+          buf.x--;
         }
-        else if (Phaser.Input.Keyboard.JustDown(cursor.right) || (pan.isPanned && Math.abs(pan.startY - pan.y) < Math.abs(pan.startX - pan.x) && pan.startX - pan.x < 0)) {
-          if (steps[1] === 0) {
-            steps[1]++;
-            buf.x++;
-          }
-          else if (steps[1] < (pan.x - pan.startX) / 30) {
-            steps[1]++;
-            buf.x++;
-          }
-          steps[0] = 0;
+        else if (Phaser.Input.Keyboard.JustDown(cursor.right)) {
+          buf.x++;
         }
-        else if (cursor.down.isDown || (pan.isPanned && Math.abs(pan.startX - pan.x) < Math.abs(pan.startY - pan.y) && pan.startY - pan.y < 0)) {
+        else if (pan.isPanned && Math.abs(pan.startY - pan.y) < Math.abs(pan.startX - pan.x)) {
+          const diff = Math.floor((pan.startX - pan.x) / 30);
+          buf.x -= diff - steps[0];
+          steps[0] = diff;
+        }
+        else if (cursor.down.isDown || (pan.isPanned && 30 < Math.abs(pan.startY - pan.y) - Math.abs(pan.startX - pan.x) && pan.startY - pan.y < 0)) {
           down = true;
         }
 
