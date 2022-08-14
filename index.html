@@ -132,6 +132,7 @@
         this.load.image("block65", "img/yukari.webp");
         this.load.image("block66", "img/yuki.webp");
         this.load.image("block67", "img/yuni.webp");
+        this.load.scenePlugin('rexgesturesplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexgesturesplugin.min.js', 'rexGestures', 'rexGestures');
 			}
 
       let cursor;
@@ -160,8 +161,19 @@
         positions: _.cloneDeep(positions[ti]),
         image: ii,
       };
+      
+      let rotated = false;
+      let touched = [false, false];
+      let tap;
+      let swipe;
 
 			function create() {
+        this.rexGestures.add.tap().on("tap", tap => rotated = true);
+        swipe = this.rexGestures.add.swipe({bounds: undefined, velocityThreshold: 100, threshold: 100})
+          .on("swipe", swipe => {
+            console.log("swipe", swipe.dragVelocity)
+          });
+
         cursor = this.input.keyboard.addKeys({ 
             up: Phaser.Input.Keyboard.KeyCodes.UP,
             down: Phaser.Input.Keyboard.KeyCodes.DOWN,
@@ -183,6 +195,22 @@
             background.setScale(0.25);
           }
         }
+
+				// this.add.graphics().fillStyle(0x000, 0).fillRect(0, 0, 300, 300)
+        //   .setInteractive(
+        //     new Phaser.Geom.Rectangle(0, 0, 300, 300), Phaser.Geom.Rectangle.Contains
+        //   )
+        //   .on('pointerdown', pointer => rotated = true);
+				// this.add.graphics().fillStyle(0x000, 0).fillRect(0, 300, 150, 600)
+        //   .setInteractive(
+        //     new Phaser.Geom.Rectangle(0, 300, 150, 600), Phaser.Geom.Rectangle.Contains
+        //   )
+        //   .on('pointerdown', pointer => touched[0] = true);
+				// this.add.graphics().fillStyle(0x000, 0).fillRect(150, 300, 300, 600)
+        //   .setInteractive(
+        //     new Phaser.Geom.Rectangle(150, 300, 300, 600), Phaser.Geom.Rectangle.Contains
+        //   )
+        //   .on('pointerdown', pointer => touched[1] = true);
 
 				blackout = this.add.graphics().fillStyle(0x000, 0.5).fillRect(0, 0, 300, 600).setDepth(1);
         blackout.visible = false;
@@ -292,18 +320,21 @@
       const processInput = (block) => {
         const buf = _.cloneDeep(block);
         let down = false;
-        if (Phaser.Input.Keyboard.JustDown(cursor.up)) {
+        if (Phaser.Input.Keyboard.JustDown(cursor.up) || rotated) {
           for (let k = 0; k < buf.positions.length; ++k) {
             const x = buf.positions[k][0];
             buf.positions[k][0] = -buf.positions[k][1];
             buf.positions[k][1] = x;
           }
+          rotated = false;
         }
-        else if (Phaser.Input.Keyboard.JustDown(cursor.left)) {
+        else if (Phaser.Input.Keyboard.JustDown(cursor.left) || touched[0]) {
           buf.x--;
+          touched[0] = false;
         }
-        else if (Phaser.Input.Keyboard.JustDown(cursor.right)) {
+        else if (Phaser.Input.Keyboard.JustDown(cursor.right) || touched[1]) {
           buf.x++;
+          touched[1] = false;
         }
         else if (cursor.down.isDown) {
           down = true;
@@ -342,6 +373,10 @@
       };
 
 			function update() {
+        if (swipe.isSwiped) {
+          // console.log('swiped')
+        }
+
         if (over) {
           return;
         }
