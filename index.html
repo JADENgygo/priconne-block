@@ -45,8 +45,8 @@
 			const config = {
 				parent: "game",
 				type: Phaser.AUTO,
-				width: 300,
-				height: 600,
+				width: 300 + 90,
+				height: 600 + 30,
 				physics: {
 					default: 'arcade',
 					arcade: {
@@ -144,27 +144,67 @@
       let blocks = [];
 
       const positions = [
-        [[-1, 0], [0, -1], [1, 0]], // 凸
-        [[0, -1], [-1, 0], [-1, 1]], // key1
+        [[0, -1], [1, 0], [0, 1]], // 凸
+        [[1, -1], [1, 0], [0, 1]], // key1
         [[0, -1], [1, 0], [1, 1]], // key2
         [[0, -1], [1, -1], [1, 0]], // squre
-        [[0, -1], [0, 1], [1, 1]], // L1
-        [[0, -1], [0, 1], [-1, 1]], // L2
+        [[0, -1], [1, -1], [0, 1]], // L1
+        [[0, -1], [0, 1], [1, 1]], // L2
         [[0, -1], [0, 1], [0, 2]], // bar
       ];
-
-      const ti = Math.floor(Math.random() * 1000) % positions.length;
-      const ii = (Math.floor(Math.random() * 1000) % 67) + 1;
-      let current = {
-        x: 5,
-        y: -3,
-        positions: _.cloneDeep(positions[ti]),
-        image: ii,
-      };
       
+      let scoreText;
+      let score = 0;
+      let current;
+      let next;
+      let nextBlocks = [];
       let tap;
       let pan;
 
+      const init = () => {
+        blackout.visible = false;
+        dialog.visible = false;
+        restart.visible = false;
+        blocks.forEach(e => e.destroy());
+        blocks = [];
+        boards = [];
+        for (let y = -10; y < 22; ++y) {
+          boards[y] = [];
+          for (let x = -2; x < 12; ++x) {
+            if (x < 0 || 9 < x || 19 < y) {
+              boards[y][x] = -1;
+            }
+            else {
+              boards[y][x] = 0;
+            }
+          }
+        }
+        {
+          const pi = Math.floor(Math.random() * 1000) % positions.length;
+          const ii = (Math.floor(Math.random() * 1000) % 67) + 1;
+          current = {
+            x: 5,
+            y: -3,
+            positions: _.cloneDeep(positions[pi]),
+            image: ii,
+          };
+        }
+        {
+          const pi = Math.floor(Math.random() * 1000) % positions.length;
+          const ii = (Math.floor(Math.random() * 1000) % 67) + 1;
+          next = {
+            x: 5,
+            y: -3,
+            positions: _.cloneDeep(positions[pi]),
+            image: ii
+          };
+        }
+        nextBlocks.forEach(e => e.destroy());
+        nextBlocks = [];
+        over = false;
+        score = 0;
+      }
+      
 			function create() {
         tap = this.rexGestures.add.tap({tapInterval: 0});
         pan = this.rexGestures.add.pan();
@@ -176,54 +216,27 @@
             left: Phaser.Input.Keyboard.KeyCodes.LEFT
         });
 
-        boards = [];
         for (let y = -10; y < 22; ++y) {
-          boards[y] = [];
           for (let x = -2; x < 12; ++x) {
-            if (x < 0 || 9 < x || 19 < y) {
-              boards[y][x] = -1;
+            if (0 <= x && x <= 9 && 0 <= y && y <= 19) {
+              const background = this.add.image(15 + 30 * x, 45 + 30 * y, 'block0');
+              background.setScale(0.25);
             }
-            else {
-              boards[y][x] = 0;
-            }
-            const background = this.add.image(15 + 30 * x, 15 + 30 * y, 'block0');
-            background.setScale(0.25);
           }
         }
 
-				blackout = this.add.graphics().fillStyle(0x000, 0.5).fillRect(0, 0, 300, 600).setDepth(1);
-        blackout.visible = false;
+        // 背景の白塗り
+				this.add.graphics().fillStyle(0xffffff, 1).fillRect(30 * 10, 0, 30, 630);
+				this.add.graphics().fillStyle(0xffffff, 1).fillRect(30 * 11, 120, 60, 510);
+
+        scoreText = this.add.text(10, 7.5, "SCORE " + score, {font: "bold 15px sans-serif", fill: "#ffffff"});
+
+				blackout = this.add.graphics().fillStyle(0x000, 0.5).fillRect(0, 30, 300, 630).setDepth(1);
 				dialog = this.add.graphics().fillStyle(0xffffff, 1).fillRoundedRect(75, 285, 150, 50, 15).setDepth(1);
-        dialog.visible = false;
         restart = this.add.text(100, 303, "もう一度プレイ", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
-				restart.on("pointerdown", pointer => {
-          blackout.visible = false;
-          dialog.visible = false;
-          restart.visible = false;
-          blocks.forEach(e => e.destroy());
-          blocks = [];
-          for (let y = -10; y < 22; ++y) {
-            boards[y] = [];
-            for (let x = -2; x < 12; ++x) {
-              if (x < 0 || 9 < x || 19 < y) {
-                boards[y][x] = -1;
-              }
-              else {
-                boards[y][x] = 0;
-              }
-            }
-          }
-          const ti = Math.floor(Math.random() * 1000) % positions.length;
-          const ii = (Math.floor(Math.random() * 1000) % 67) + 1;
-          current = {
-            x: 5,
-            y: -3,
-            positions: _.cloneDeep(positions[ti]),
-            image: ii,
-          };
-          over = false;
-        });
-        restart.visible = false;
+				restart.on("pointerdown", pointer => init());
+
+        init();
 			}
 
       const canPutBlock = (block) => {
@@ -269,31 +282,42 @@
       };
 
       const createBlock = () => {
-        const pi = Math.floor(Math.random() * 1000) % positions.length;
-        const ii = (Math.floor(Math.random() * 1000) % 67) + 1;
-        const block = {x: 5, y: -3, positions: _.cloneDeep(positions[pi]), image: ii};
-        if (canPutBlock(block)) {
-          return block;
+        const buf = _.cloneDeep(next);
+        if (canPutBlock(buf)) {
+          const pi = Math.floor(Math.random() * 1000) % positions.length;
+          const ii = (Math.floor(Math.random() * 1000) % 67) + 1;
+          const block = {x: 5, y: -3, positions: _.cloneDeep(positions[pi]), image: ii};
+          next = _.cloneDeep(block);
+          return buf;
         }
         return null;
       };
 
       function showBoard() {
-        for (const e of blocks) {
-          e.destroy();
-        }
+        blocks.forEach(e => e.destroy());
         blocks = [];
         for (let y = 0; y < 20; ++y) {
           for (let x = 0; x < 10; ++x) {
             if (boards[y][x] !== 0) {
-              const block = this.add.image(0, 0, 'block' + boards[y][x]);
+              const block = this.add.image(15 + 30 * x, 45 + 30 * y, 'block' + boards[y][x]);
               block.setScale(0.25);
               blocks.push(block);
-              blocks[blocks.length - 1].x = 15 + 30 * x;
-              blocks[blocks.length - 1].y = 15 + 30 * y;
             }
           }
         }
+
+        nextBlocks.forEach(e => e.destroy());
+        nextBlocks = [];
+        const block = this.add.image(15 + 11 * 30, 15 + 1 * 30, "block" + next.image)
+        block.setScale(0.25);
+        nextBlocks.push(block);
+        for (const e of next.positions) {
+          const block = this.add.image(15 + (11 + e[0]) * 30, 15 + (1 + e[1]) * 30, "block" + next.image)
+          block.setScale(0.25);
+          nextBlocks.push(block);
+        }
+
+        scoreText.text = "SCORE " + score;
       }
 
       let step = 0;
@@ -303,7 +327,6 @@
         if (!pan.isPanned) {
           step = 0;
         }
-        console.log(pan.isPanned, pan.startX, pan.x, pan.endX)
         if (Phaser.Input.Keyboard.JustDown(cursor.up) || tap.isTapped) {
           for (let k = 0; k < buf.positions.length; ++k) {
             const x = buf.positions[k][0];
@@ -335,6 +358,7 @@
       };
 
       const deleteLine = () => {
+        let count = 0;
         for (let y = 19; 0 <= y; --y) {
           let found = true;
           for (let x = 0; x < 10; ++x) {
@@ -350,8 +374,11 @@
               }
             }
             ++y;
+            ++count;
           }
         }
+        const scores = [0, 40, 100, 300, 1200];
+        score += scores[count];
       };
 
       function gameOver() {
