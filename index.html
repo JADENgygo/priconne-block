@@ -162,17 +162,12 @@
         image: ii,
       };
       
-      let rotated = false;
-      let touched = [false, false];
       let tap;
-      let swipe;
+      let pan;
 
 			function create() {
-        this.rexGestures.add.tap().on("tap", tap => rotated = true);
-        swipe = this.rexGestures.add.swipe({bounds: undefined, velocityThreshold: 100, threshold: 100})
-          .on("swipe", swipe => {
-            console.log("swipe", swipe.dragVelocity)
-          });
+        tap = this.rexGestures.add.tap({tapInterval: 0});
+        pan = this.rexGestures.add.pan();
 
         cursor = this.input.keyboard.addKeys({ 
             up: Phaser.Input.Keyboard.KeyCodes.UP,
@@ -195,22 +190,6 @@
             background.setScale(0.25);
           }
         }
-
-				// this.add.graphics().fillStyle(0x000, 0).fillRect(0, 0, 300, 300)
-        //   .setInteractive(
-        //     new Phaser.Geom.Rectangle(0, 0, 300, 300), Phaser.Geom.Rectangle.Contains
-        //   )
-        //   .on('pointerdown', pointer => rotated = true);
-				// this.add.graphics().fillStyle(0x000, 0).fillRect(0, 300, 150, 600)
-        //   .setInteractive(
-        //     new Phaser.Geom.Rectangle(0, 300, 150, 600), Phaser.Geom.Rectangle.Contains
-        //   )
-        //   .on('pointerdown', pointer => touched[0] = true);
-				// this.add.graphics().fillStyle(0x000, 0).fillRect(150, 300, 300, 600)
-        //   .setInteractive(
-        //     new Phaser.Geom.Rectangle(150, 300, 300, 600), Phaser.Geom.Rectangle.Contains
-        //   )
-        //   .on('pointerdown', pointer => touched[1] = true);
 
 				blackout = this.add.graphics().fillStyle(0x000, 0.5).fillRect(0, 0, 300, 600).setDepth(1);
         blackout.visible = false;
@@ -317,28 +296,47 @@
         }
       }
 
+      const steps = [0, 0];
       const processInput = (block) => {
         const buf = _.cloneDeep(block);
         let down = false;
-        if (Phaser.Input.Keyboard.JustDown(cursor.up) || rotated) {
+        if (!pan.isPanned) {
+          steps[0] = 0;
+          steps[1] = 0;
+        }
+        if (Phaser.Input.Keyboard.JustDown(cursor.up) || tap.isTapped) {
           for (let k = 0; k < buf.positions.length; ++k) {
             const x = buf.positions[k][0];
             buf.positions[k][0] = -buf.positions[k][1];
             buf.positions[k][1] = x;
           }
-          rotated = false;
         }
-        else if (Phaser.Input.Keyboard.JustDown(cursor.left) || touched[0]) {
-          buf.x--;
-          touched[0] = false;
+        else if (Phaser.Input.Keyboard.JustDown(cursor.left) || (pan.isPanned && Math.abs(pan.startY - pan.y) < Math.abs(pan.startX - pan.x) && 0 < pan.startX - pan.x)) {
+          if (steps[0] === 0) {
+            steps[0]++;
+            buf.x--;
+          }
+          else if (steps[0] < (pan.startX - pan.x) / 30) {
+            steps[0]++;
+            buf.x--;
+          }
+          steps[1] = 0;
         }
-        else if (Phaser.Input.Keyboard.JustDown(cursor.right) || touched[1]) {
-          buf.x++;
-          touched[1] = false;
+        else if (Phaser.Input.Keyboard.JustDown(cursor.right) || (pan.isPanned && Math.abs(pan.startY - pan.y) < Math.abs(pan.startX - pan.x) && pan.startX - pan.x < 0)) {
+          if (steps[1] === 0) {
+            steps[1]++;
+            buf.x++;
+          }
+          else if (steps[1] < (pan.x - pan.startX) / 30) {
+            steps[1]++;
+            buf.x++;
+          }
+          steps[0] = 0;
         }
-        else if (cursor.down.isDown) {
+        else if (cursor.down.isDown || (pan.isPanned && Math.abs(pan.startX - pan.x) < Math.abs(pan.startY - pan.y) && pan.startY - pan.y < 0)) {
           down = true;
         }
+
         if (canPutBlock(buf)) {
           return [buf, down];
         }
@@ -373,10 +371,6 @@
       };
 
 			function update() {
-        if (swipe.isSwiped) {
-          // console.log('swiped')
-        }
-
         if (over) {
           return;
         }
