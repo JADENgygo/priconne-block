@@ -296,14 +296,14 @@
         }
       }
 
-      const steps = [0, 0];
+      let step = 0;
       const processInput = (block) => {
         const buf = _.cloneDeep(block);
         let down = false;
         if (!pan.isPanned) {
-          steps[0] = 0;
-          steps[1] = 0;
+          step = 0;
         }
+        console.log(pan.isPanned, pan.startX, pan.x, pan.endX)
         if (Phaser.Input.Keyboard.JustDown(cursor.up) || tap.isTapped) {
           for (let k = 0; k < buf.positions.length; ++k) {
             const x = buf.positions[k][0];
@@ -318,11 +318,13 @@
           buf.x++;
         }
         else if (pan.isPanned && Math.abs(pan.startY - pan.y) < Math.abs(pan.startX - pan.x)) {
-          const diff = Math.floor((pan.startX - pan.x) / 30);
-          buf.x -= diff - steps[0];
-          steps[0] = diff;
+          if (pan.x !== undefined && pan.x !== pan.endX) {
+            const diff = Math.trunc((pan.startX - pan.x) / 30);
+            buf.x -= diff - step;
+            step = diff;
+          }
         }
-        else if (cursor.down.isDown || (pan.isPanned && 30 < Math.abs(pan.startY - pan.y) - Math.abs(pan.startX - pan.x) && pan.startY - pan.y < 0)) {
+        else if (cursor.down.isDown || (pan.isPanned && 60 < Math.abs(pan.startY - pan.y) - Math.abs(pan.startX - pan.x) && pan.startY - pan.y < 0)) {
           down = true;
         }
 
