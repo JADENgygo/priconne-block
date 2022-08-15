@@ -162,7 +162,7 @@
       let current;
       let next;
       let nextBlocks = [];
-      let tap;
+      let tapped;
       let pan;
 
       const init = (first) => {
@@ -215,10 +215,6 @@
       
       let started = false;
 			function create() {
-        tap = this.rexGestures.add.tap({
-          bounds: new Phaser.Geom.Rectangle(0, 30, 300, 600),
-          tapInterval: 0
-        });
         pan = this.rexGestures.add.pan();
 
         cursor = this.input.keyboard.addKeys({ 
@@ -241,7 +237,20 @@
 				this.add.graphics().fillStyle(0xffffff, 1).fillRect(30 * 10, 0, 30, 630);
 				this.add.graphics().fillStyle(0xffffff, 1).fillRect(30 * 11, 120, 60, 510);
 
-        this.add.image(360, 600, "pause").setDepth(10).setScale(1.5).setInteractive()
+        scoreText = this.add.text(10, 7.5, "SCORE " + score, {font: "bold 15px sans-serif", fill: "#ffffff"});
+
+        // for tap
+				this.add.graphics().fillStyle(0xffffff, 0).fillRect(0, 30, 300, 600).setDepth(1).setInteractive(
+					new Phaser.Geom.Rectangle(0, 30, 300, 600), Phaser.Geom.Rectangle.Contains
+				)
+        .on("pointerdown", pointer => {
+          if (!started || pause || over) {
+            return;
+          }
+          tapped = true;
+        });
+
+        this.add.image(360, 600, "pause").setDepth(2).setScale(1.5).setInteractive()
           .on("pointerdown", pointer => {
             if (!started || over) {
               return;
@@ -254,21 +263,20 @@
             resume.visible = !resume.visible;
           });
 
-        scoreText = this.add.text(10, 7.5, "SCORE " + score, {font: "bold 15px sans-serif", fill: "#ffffff"});
 
-				blackout = this.add.graphics().fillStyle(0x000, 0.5).fillRect(0, 30, 300, 630).setDepth(1);
-				dialog = this.add.graphics().fillStyle(0xffffff, 1).fillRoundedRect(75, 285, 150, 50, 15).setDepth(1);
-        const start = this.add.text(125, 303, "START", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
+				blackout = this.add.graphics().fillStyle(0x000, 0.5).fillRect(0, 30, 300, 630).setDepth(2);
+				dialog = this.add.graphics().fillStyle(0xffffff, 1).fillRoundedRect(75, 285, 150, 50, 15).setDepth(2);
+        const start = this.add.text(125, 303, "START", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(2).setInteractive();
 				start.on("pointerdown", pointer => {
           blackout.visible = false;
           dialog.visible = false;
           start.visible = false;
           started = true;
         });
-				pauseDialog = this.add.graphics().fillStyle(0xffffff, 1).fillRoundedRect(75, 235, 150, 100, 15).setDepth(1);
-        restart = this.add.text(110, 303, "NEW GAME", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
+				pauseDialog = this.add.graphics().fillStyle(0xffffff, 1).fillRoundedRect(75, 235, 150, 100, 15).setDepth(2);
+        restart = this.add.text(110, 303, "NEW GAME", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(2).setInteractive();
 				restart.on("pointerdown", pointer => init(false));
-        resume = this.add.text(120, 303, "RESUME", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
+        resume = this.add.text(120, 303, "RESUME", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(2).setInteractive();
 				resume.on("pointerdown", pointer => {
           blackout.visible = false;
           pauseDialog.visible = false;
@@ -369,12 +377,13 @@
         if (!pan.isPanned) {
           step = 0;
         }
-        if (Phaser.Input.Keyboard.JustDown(cursor.up) || tap.isTapped) {
+        if (Phaser.Input.Keyboard.JustDown(cursor.up) || tapped) {
           for (let k = 0; k < buf.positions.length; ++k) {
             const x = buf.positions[k][0];
             buf.positions[k][0] = -buf.positions[k][1];
             buf.positions[k][1] = x;
           }
+          tapped = false;
         }
         else if (Phaser.Input.Keyboard.JustDown(cursor.left)) {
           buf.x--;
