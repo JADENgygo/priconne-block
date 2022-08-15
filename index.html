@@ -162,10 +162,11 @@
       let current;
       let next;
       let nextBlocks = [];
-      let tapped;
+      let tapState = 2; // 0: no tap, 1: tap, 2: disable
       let pan;
 
       const init = (first) => {
+        tapState = 2;
         blackout.visible = first;
         dialog.visible = first;
         pauseDialog.visible = false;
@@ -215,6 +216,17 @@
       
       let started = false;
 			function create() {
+        this.rexGestures.add.tap({
+          bounds: new Phaser.Geom.Rectangle(0, 30, 300, 600),
+          tapInterval: 0
+        })
+        .on("tap", () => {
+          if (tapState === 2) {
+            tapState = 0;
+            return;
+          }
+          tapState = 1;
+        });
         pan = this.rexGestures.add.pan();
 
         cursor = this.input.keyboard.addKeys({ 
@@ -239,18 +251,7 @@
 
         scoreText = this.add.text(10, 7.5, "SCORE " + score, {font: "bold 15px sans-serif", fill: "#ffffff"});
 
-        // for tap
-				this.add.graphics().fillStyle(0xffffff, 0).fillRect(0, 30, 300, 600).setDepth(1).setInteractive(
-					new Phaser.Geom.Rectangle(0, 30, 300, 600), Phaser.Geom.Rectangle.Contains
-				)
-        .on("pointerdown", pointer => {
-          if (!started || pause || over) {
-            return;
-          }
-          tapped = true;
-        });
-
-        this.add.image(360, 600, "pause").setDepth(2).setScale(1.5).setInteractive()
+        this.add.image(360, 600, "pause").setScale(1.5).setInteractive()
           .on("pointerdown", pointer => {
             if (!started || over) {
               return;
@@ -263,21 +264,22 @@
             resume.visible = !resume.visible;
           });
 
-
-				blackout = this.add.graphics().fillStyle(0x000, 0.5).fillRect(0, 30, 300, 630).setDepth(2);
-				dialog = this.add.graphics().fillStyle(0xffffff, 1).fillRoundedRect(75, 285, 150, 50, 15).setDepth(2);
-        const start = this.add.text(125, 303, "START", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(2).setInteractive();
+				blackout = this.add.graphics().fillStyle(0x000, 0.5).fillRect(0, 30, 300, 630).setDepth(1);
+				dialog = this.add.graphics().fillStyle(0xffffff, 1).fillRoundedRect(75, 285, 150, 50, 15).setDepth(1);
+        const start = this.add.text(125, 303, "START", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
 				start.on("pointerdown", pointer => {
+          tapState = 2;
           blackout.visible = false;
           dialog.visible = false;
           start.visible = false;
           started = true;
         });
-				pauseDialog = this.add.graphics().fillStyle(0xffffff, 1).fillRoundedRect(75, 235, 150, 100, 15).setDepth(2);
-        restart = this.add.text(110, 303, "NEW GAME", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(2).setInteractive();
+				pauseDialog = this.add.graphics().fillStyle(0xffffff, 1).fillRoundedRect(75, 235, 150, 100, 15).setDepth(1);
+        restart = this.add.text(110, 303, "NEW GAME", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
 				restart.on("pointerdown", pointer => init(false));
-        resume = this.add.text(120, 303, "RESUME", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(2).setInteractive();
+        resume = this.add.text(120, 303, "RESUME", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
 				resume.on("pointerdown", pointer => {
+          tapState = 2;
           blackout.visible = false;
           pauseDialog.visible = false;
           restart.y = 303;
@@ -377,13 +379,13 @@
         if (!pan.isPanned) {
           step = 0;
         }
-        if (Phaser.Input.Keyboard.JustDown(cursor.up) || tapped) {
+        if (Phaser.Input.Keyboard.JustDown(cursor.up) || tapState === 1) {
           for (let k = 0; k < buf.positions.length; ++k) {
             const x = buf.positions[k][0];
             buf.positions[k][0] = -buf.positions[k][1];
             buf.positions[k][1] = x;
           }
-          tapped = false;
+          tapState = 0;
         }
         else if (Phaser.Input.Keyboard.JustDown(cursor.left)) {
           buf.x--;
