@@ -161,9 +161,9 @@
       let tap;
       let pan;
 
-      const init = () => {
-        blackout.visible = false;
-        dialog.visible = false;
+      const init = (first) => {
+        blackout.visible = first;
+        dialog.visible = first;
         restart.visible = false;
         blocks.forEach(e => e.destroy());
         blocks = [];
@@ -205,6 +205,7 @@
         score = 0;
       }
       
+      let started = false;
 			function create() {
         tap = this.rexGestures.add.tap({tapInterval: 0});
         pan = this.rexGestures.add.pan();
@@ -233,10 +234,17 @@
 
 				blackout = this.add.graphics().fillStyle(0x000, 0.5).fillRect(0, 30, 300, 630).setDepth(1);
 				dialog = this.add.graphics().fillStyle(0xffffff, 1).fillRoundedRect(75, 285, 150, 50, 15).setDepth(1);
+        const start = this.add.text(120, 303, "スタート", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
+				start.on("pointerdown", pointer => {
+          blackout.visible = false;
+          dialog.visible = false;
+          start.visible = false;
+          started = true;
+        });
         restart = this.add.text(100, 303, "もう一度プレイ", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
-				restart.on("pointerdown", pointer => init());
+				restart.on("pointerdown", pointer => init(false));
 
-        init();
+        init(true);
 			}
 
       const canPutBlock = (block) => {
@@ -389,7 +397,7 @@
       };
 
 			function update() {
-        if (over) {
+        if (!started || over) {
           return;
         }
         deleteBlock(current);
