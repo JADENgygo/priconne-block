@@ -169,6 +169,7 @@
         blackout.visible = first;
         dialog.visible = first;
         pauseDialog.visible = false;
+        restart.y = 303;
         restart.visible = false;
         resume.visible = false;
         blocks.forEach(e => e.destroy());
@@ -460,6 +461,7 @@
         else {
           putblock(current);
         }
+
         showBoard.call(this);
 			}
 		</script>
