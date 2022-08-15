@@ -132,6 +132,7 @@
         this.load.image("block65", "img/yukari.webp");
         this.load.image("block66", "img/yuki.webp");
         this.load.image("block67", "img/yuni.webp");
+        this.load.svg("pause", "img/pause-circle.svg");
         this.load.scenePlugin('rexgesturesplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexgesturesplugin.min.js', 'rexGestures', 'rexGestures');
 			}
 
@@ -139,8 +140,11 @@
       let boards; // 20 x 10
       let blackout;
       let dialog;
+      let pauseDialog;
       let restart;
       let over = false;
+      let pause = false;
+      let resume;
       let blocks = [];
 
       const positions = [
@@ -164,7 +168,9 @@
       const init = (first) => {
         blackout.visible = first;
         dialog.visible = first;
+        pauseDialog.visible = false;
         restart.visible = false;
+        resume.visible = false;
         blocks.forEach(e => e.destroy());
         blocks = [];
         boards = [];
@@ -202,12 +208,16 @@
         nextBlocks.forEach(e => e.destroy());
         nextBlocks = [];
         over = false;
+        pause = false;
         score = 0;
-      }
+      };
       
       let started = false;
 			function create() {
-        tap = this.rexGestures.add.tap({tapInterval: 0});
+        tap = this.rexGestures.add.tap({
+          bounds: new Phaser.Geom.Rectangle(0, 30, 300, 600),
+          tapInterval: 0
+        });
         pan = this.rexGestures.add.pan();
 
         cursor = this.input.keyboard.addKeys({ 
@@ -230,19 +240,42 @@
 				this.add.graphics().fillStyle(0xffffff, 1).fillRect(30 * 10, 0, 30, 630);
 				this.add.graphics().fillStyle(0xffffff, 1).fillRect(30 * 11, 120, 60, 510);
 
+        this.add.image(360, 600, "pause").setDepth(10).setScale(1.5).setInteractive()
+          .on("pointerdown", pointer => {
+            if (!started || over) {
+              return;
+            }
+            pause = !pause;
+            blackout.visible = !blackout.visible;
+            pauseDialog.visible = !pauseDialog.visible;
+            restart.y = pause ? 253 : 303;
+            restart.visible = !restart.visible;
+            resume.visible = !resume.visible;
+          });
+
         scoreText = this.add.text(10, 7.5, "SCORE " + score, {font: "bold 15px sans-serif", fill: "#ffffff"});
 
 				blackout = this.add.graphics().fillStyle(0x000, 0.5).fillRect(0, 30, 300, 630).setDepth(1);
 				dialog = this.add.graphics().fillStyle(0xffffff, 1).fillRoundedRect(75, 285, 150, 50, 15).setDepth(1);
-        const start = this.add.text(120, 303, "スタート", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
+        const start = this.add.text(125, 303, "START", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
 				start.on("pointerdown", pointer => {
           blackout.visible = false;
           dialog.visible = false;
           start.visible = false;
           started = true;
         });
-        restart = this.add.text(100, 303, "もう一度プレイ", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
+				pauseDialog = this.add.graphics().fillStyle(0xffffff, 1).fillRoundedRect(75, 235, 150, 100, 15).setDepth(1);
+        restart = this.add.text(110, 303, "NEW GAME", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
 				restart.on("pointerdown", pointer => init(false));
+        resume = this.add.text(120, 303, "RESUME", {font: "bold 15px sans-serif", fill: "#000"}).setDepth(1).setInteractive();
+				resume.on("pointerdown", pointer => {
+          blackout.visible = false;
+          pauseDialog.visible = false;
+          restart.y = 303;
+          restart.visible = false;
+          resume.visible = false;
+          pause = false;
+        });
 
         init(true);
 			}
@@ -397,7 +430,7 @@
       };
 
 			function update() {
-        if (!started || over) {
+        if (!started || over || pause) {
           return;
         }
         deleteBlock(current);
