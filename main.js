@@ -2,8 +2,7 @@ import "./style.scss";
 import Phaser from "phaser";
 import GesturesPlugin from 'phaser3-rex-plugins/plugins/gestures-plugin.js';
 import { Tap, Pan } from "phaser3-rex-plugins/plugins/gestures.js";
-// const cloneDeep = require('lodash.cloneDeep');
-import cloneDeep from 'lodash.cloneDeep';
+import cloneDeep from 'lodash.clonedeep';
 
 const theme = localStorage.getItem('theme');
 if (theme === null) {
